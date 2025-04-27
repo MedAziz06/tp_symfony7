@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+{% block title %}Détails de {{ article.nom }}{% endblock %}
+{% block body %}
+<h1>{{ article.nom }}</h1>
+<p><strong>Prix :</strong> {{ article.prix }} TND</p>
+<p>Catégorie :
+    {{ article.category.titre }}
+</p>
+
+<a href="{{ path('article_list') }}" class="btn btn-secondary">← Retour</a>
+<a href="{{ path('edit_article', {'id': article.id}) }}" class="btn btn-warning">✏️ Modifier</a>
+<form action="{{ path('delete_article', {'id': article.id}) }}" method="post" style="display:inline;" onsubmit="return confirm('Confirmer la suppression ?');">
+    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ article.id) }}">
+    <button class="btn btn-danger">🗑 Supprimer</button>
+</form>
+{% endblock %}
