@@ -1,11 +1,16 @@
 <?php
-// src/Controller/ArticleController.php
 namespace App\Controller;
 
 use App\Entity\Article;
 use App\Entity\Category;
+use App\Entity\PropertySearch; // Ajouté
+use App\Entity\CategorySearch; // Ajouté
+use App\Entity\PriceSearch; // Ajouté
 use App\Form\ArticleType;
-use App\Form\CategoryType; // ✅ Ajouté ici !
+use App\Form\CategoryType;
+use App\Form\PropertySearchType; // Ajouté
+use App\Form\CategorySearchType; // Ajouté
+use App\Form\PriceSearchType; // Ajouté
 use App\Repository\ArticleRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -16,10 +21,24 @@ use Symfony\Component\Routing\Annotation\Route;
 class ArticleController extends AbstractController
 {
     #[Route('/articles', name: 'article_list')]
-    public function index(ArticleRepository $articleRepository): Response
+    public function home(Request $request, ArticleRepository $articleRepository): Response
     {
+        $propertySearch = new PropertySearch();
+        $form = $this->createForm(PropertySearchType::class, $propertySearch);
+        $form->handleRequest($request);
+        
+        $articles = [];
+        
+        if ($form->isSubmitted() && $form->isValid()) {
+            $nom = $propertySearch->getNom();
+            $articles = $nom 
+                ? $articleRepository->findBy(['nom' => $nom])
+                : $articleRepository->findAll();
+        }
+        
         return $this->render('articles/index.html.twig', [
-            'articles' => $articleRepository->findAll(),
+            'form' => $form->createView(),
+            'articles' => $articles
         ]);
     }
 
@@ -80,17 +99,80 @@ class ArticleController extends AbstractController
     public function newCategory(Request $request, EntityManagerInterface $em): Response
     {
         $category = new Category();
-        $form = $this->createForm(CategoryType::class, $category); // ✅ nécessite le use
+        $form = $this->createForm(CategoryType::class, $category);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $em->persist($category);
             $em->flush();
-            return $this->redirectToRoute('article_list'); // ou autre
+            return $this->redirectToRoute('article_list');
         }
 
         return $this->render('articles/newCategory.html.twig', [
             'form' => $form->createView()
         ]);
     }
+
+    
+
+    #[Route('/art_cat', name: 'article_par_cat')]
+    public function articlesParCategorie(Request $request, ArticleRepository $articleRepository): Response
+    {
+        $categorySearch = new CategorySearch();
+        $form = $this->createForm(CategorySearchType::class, $categorySearch);
+        $form->handleRequest($request);
+    
+        // Initialisez avec un tableau vide au lieu de tous les articles
+        $articles = [];
+    
+        if ($form->isSubmitted() && $form->isValid()) {
+            $category = $categorySearch->getCategory();
+            
+            if ($category) {
+                $articles = $articleRepository->findBy(['category' => $category]);
+                // Alternative si vous voulez utiliser la relation directe :
+                // $articles = $category->getArticles()->toArray();
+            } else {
+                $articles = $articleRepository->findAll();
+            }
+        }
+    
+        return $this->render('articles/articlesParCategorie.html.twig', [
+            'form' => $form->createView(),
+            'articles' => $articles
+        ]);
+    }
+    #[Route('/art_prix', name: 'article_par_prix')]
+public function articlesParPrix(Request $request, ArticleRepository $articleRepository): Response
+{
+    $priceSearch = new PriceSearch();
+    $form = $this->createForm(PriceSearchType::class, $priceSearch);
+    $form->handleRequest($request);
+
+    // Debug: affichez les valeurs reçues
+    dump($priceSearch);
+
+    $articles = [];
+    
+    if ($form->isSubmitted() && $form->isValid()) {
+        $minPrice = $priceSearch->getMinPrice();
+        $maxPrice = $priceSearch->getMaxPrice();
+        
+        $articles = $articleRepository->findByPriceRange($minPrice, $maxPrice);
+        
+        // Debug: affichez les résultats
+        dump($articles);
+    }
+
+    return $this->render('articles/articlesParPrix.html.twig', [
+        'form' => $form->createView(),
+        'articles' => $articles
+    ]);
+}
+    public function index()
+{
+    $response = $this->render(...);
+    // dump($data); // Uniquement si nécessaire
+    return $response;
+}
 }

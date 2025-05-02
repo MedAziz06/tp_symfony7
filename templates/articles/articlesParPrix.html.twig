@@ -1,0 +1,41 @@
+{# templates/articles/articlesParCategorie.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Articles par Catégorie{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1 class="mb-4">Recherche d'articles par catégorie</h1>
+
+    {# ... (formulaire inchangé) ... #}
+
+    {% if articles is not empty %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th class="text-end">Prix</th>
+                    <th>Catégorie</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for article in articles %}
+                <tr>
+                    <td>{{ article.nom }}</td>
+                    <td class="text-end">{{ article.prix|number_format(2, ',', ' ') }} €</td>
+                    <td>{{ article.category.titre }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="alert alert-warning">
+            {% if form.isSubmitted %}
+                Aucun article trouvé dans cette catégorie.
+            {% else %}
+                Sélectionnez une catégorie pour afficher les articles.
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

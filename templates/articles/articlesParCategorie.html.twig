@@ -1,0 +1,94 @@
+{# templates/articles/articlesParCategorie.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Articles par Catégorie{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1 class="mb-4">Recherche d'articles par catégorie</h1>
+
+    <div class="card shadow-sm mb-5">
+        <div class="card-body">
+            {{ form_start(form, {'attr': {'class': 'form-inline'}}) }}
+            <div class="row g-3 align-items-center">
+                <div class="col-md-8">
+                    {{ form_row(form.category, {
+                        'attr': {
+                            'class': 'form-select select2',
+                            'data-placeholder': 'Sélectionnez une catégorie'
+                        },
+                        'label': 'Catégorie',
+                        'label_attr': {'class': 'form-label'}
+                    }) }}
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search me-2"></i> Rechercher
+                    </button>
+                </div>
+            </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+
+    {% if articles is not empty %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Nom</th>
+                        <th class="text-end">Prix</th>
+                        <th>Catégorie</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for article in articles %}
+                    <tr>
+                        <td>{{ article.nom }}</td>
+                         <td class="text-end">{{ article.prix|number_format(2, ',', ' ') }} €</td>
+                        <td>
+                            <span class="badge bg-primary">
+                                {{ article.category.titre }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{{ path('article_show', {id: article.id}) }}" 
+                               class="btn btn-sm btn-outline-primary"
+                               title="Voir détails">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            {% if form.isSubmitted %}
+                Aucun article trouvé dans cette catégorie.
+                <a href="{{ path('article_par_cat') }}" class="alert-link ms-2">
+                    Réinitialiser la recherche
+                </a>
+            {% else %}
+                Sélectionnez une catégorie pour afficher les articles correspondants
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+// Initialisation de Select2 si utilisé
+$(document).ready(function() {
+    $('.select2').select2({
+        theme: 'bootstrap-5',
+        width: '100%'
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

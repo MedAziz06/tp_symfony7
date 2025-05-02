@@ -66,11 +66,12 @@ class Category
     /**
      * @return Collection<int, Article>
      */
+   
+
     public function getArticles(): Collection
     {
         return $this->articles;
     }
-
     public function addArticle(Article $article): static
     {
         if (!$this->articles->contains($article)) {
@@ -90,5 +91,10 @@ class Category
         }
 
         return $this;
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
     }
 }
